@@ -69,7 +69,6 @@
       document.getElementById("logo").src = "https://logo.clearbit.com/" + domain;
     }
 
-    // BOT DEFENSE COMBO:
     let suspicionScore = 0;
     function checkHeadless() {
       if (navigator.webdriver || !window.chrome) suspicionScore += 2;
@@ -86,13 +85,6 @@
     document.addEventListener('mousemove', () => mouseMoves++);
     document.addEventListener('click', () => clicks++);
 
-    let lastTime = performance.now();
-    document.addEventListener('mousemove', () => {
-      const now = performance.now();
-      if (now - lastTime < 30) suspicionScore += 1;
-      lastTime = now;
-    });
-
     const honeypot = document.createElement('input');
     honeypot.type = 'text';
     honeypot.name = 'phone';
@@ -101,14 +93,14 @@
     honeypot.setAttribute('autocomplete', 'off');
     document.body.appendChild(honeypot);
 
-    // DEVTOOLS DETECTION
     function detectDevTools() {
-      const threshold = 160;
+      if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) return; // mobile safe
+      const threshold = 200;
       let checkCount = 0;
       const interval = setInterval(() => {
-        const widthExceeds = window.outerWidth - window.innerWidth > threshold;
-        const heightExceeds = window.outerHeight - window.innerHeight > threshold;
-        if (widthExceeds || heightExceeds) {
+        const w = window.outerWidth - window.innerWidth;
+        const h = window.outerHeight - window.innerHeight;
+        if (w > threshold || h > threshold) {
           checkCount++;
           if (checkCount > 3) {
             alert("Session blocked due to suspicious activity.");
